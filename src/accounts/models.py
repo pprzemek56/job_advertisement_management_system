@@ -1,3 +1,5 @@
+import os.path
+
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 
@@ -6,11 +8,11 @@ class JobSeekerManager(BaseUserManager):
     use_in_migrations = True
 
     def _create_user(self, email, first_name, last_name, phone_number, password, **extra_fields):
-        # TODO: refactor raise exception
-        values = [email, first_name, last_name]
-        for value in values:
+        values = [first_name, last_name]
+        field_value_map = dict(zip(self.model.REQUIRED_FIELDS, values))
+        for field_name, value in field_value_map:
             if not value:
-                raise ValueError("The given {} must be set".format())
+                raise ValueError("The given {} must be set".format(field_name))
         email = self.normalize_email(email)
         user = self.model(
             email=email,
@@ -40,12 +42,12 @@ class JobSeeker(AbstractBaseUser):
     date_joined = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
-    # TODO: add cv field
+    cv = models.FileField(upload_to="\\resumes", null=True, blank=True)
 
     objects = JobSeekerManager()
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS = ["first_name", "last_name"]
 
     def get_full_name(self):
         return f"{self.first_name} {self.last_name}".title().strip()
@@ -55,11 +57,29 @@ class JobSeeker(AbstractBaseUser):
 
 
 class CompanyManager(BaseUserManager):
-    # use_in_migrations = True
-    #
-    # def _create_user(self, email, company_name, nip_number):
-    #     if
-    pass
+    use_in_migrations = True
+
+    def _create_user(self, email, company_name, nip_number, password, **extra_fields):
+        values = [company_name, nip_number]
+        field_value_map = dict(zip(self.model.REQUIRED_FIELDS, values))
+        for field_name, value in field_value_map:
+            if not value:
+                raise ValueError("The {} value must be set".format(field_name))
+        email = self.normalize_email(email)
+        company = self.model(
+            email=email,
+            company_name=company_name,
+            nip_number=nip_number,
+            **extra_fields
+        )
+        company.set_password(password)
+        company.save(using=self._db)
+        return company
+
+    def create_user(self, email, company_name, nip_number, password=None, **extra_fields):
+        extra_fields.setdefault("is_staff", False)
+        extra_fields.setdefault("is_superuser", False)
+        return self._create_user(email, company_name, nip_number, password, **extra_fields)
 
 
 class Company(AbstractBaseUser):
@@ -74,7 +94,7 @@ class Company(AbstractBaseUser):
     is_staff = models.BooleanField(default=False)
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS = ["company_name", "nip_number"]
 
     def get_full_name(self):
         return f"{self.company_name} {self.nip_number}".title().strip()
