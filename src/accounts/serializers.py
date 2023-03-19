@@ -6,7 +6,7 @@ from rest_framework.exceptions import ValidationError
 from .models import Company, JobSeeker
 
 
-class RegisterCompanySerializer(serializers.ModelSerializer):
+class CompanySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Company
@@ -44,7 +44,7 @@ class RegisterCompanySerializer(serializers.ModelSerializer):
         return company
 
 
-class RegisterJobSeekerSerializer(serializers.ModelSerializer):
+class JobSeekerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = JobSeeker
