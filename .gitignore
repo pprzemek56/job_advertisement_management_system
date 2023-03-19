@@ -163,3 +163,5 @@ cython_debug/
 settings.py
 
 migrations/
+
+requirements.txt
