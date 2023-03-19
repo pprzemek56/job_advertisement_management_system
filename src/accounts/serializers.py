@@ -7,6 +7,7 @@ from .models import Company, JobSeeker
 
 
 class CompanySerializer(serializers.ModelSerializer):
+    password = serializers.CharField(max_length=20, min_length=8, write_only=True)
 
     class Meta:
         model = Company
@@ -23,8 +24,7 @@ class CompanySerializer(serializers.ModelSerializer):
         """
         if re.match(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", attrs["email"]) is None:
             raise ValidationError("email is invalid")
-        if Company.objects.filter(email=attrs["email"]).exists() \
-                or JobSeeker.objects.filter(email=attrs["email"]).exists():
+        if JobSeeker.objects.filter(email=attrs["email"]).exists():
             raise ValidationError("email is taken")
 
         """
@@ -45,6 +45,7 @@ class CompanySerializer(serializers.ModelSerializer):
 
 
 class JobSeekerSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(max_length=20, min_length=8, write_only=True)
 
     class Meta:
         model = JobSeeker
@@ -63,8 +64,7 @@ class JobSeekerSerializer(serializers.ModelSerializer):
         """
         if re.match(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", attrs["email"]) is None:
             raise ValidationError("email is invalid")
-        if Company.objects.filter(email=attrs["email"]).exists() \
-                or JobSeeker.objects.filter(email=attrs["email"]).exists():
+        if Company.objects.filter(email=attrs["email"]).exists():
             raise ValidationError("email is taken")
 
         """
@@ -76,13 +76,13 @@ class JobSeekerSerializer(serializers.ModelSerializer):
         """
         Verify first_name is valid
         """
-        if re.match(r"^[a-zA-Z]$+") is None:
+        if re.match(r"^[a-zA-Z]+$", attrs["first_name"]) is None:
             raise ValidationError("first name is invalid")
 
         """
         Verify last_name is valid
         """
-        if re.match(r"^[a-zA-Z]$+") is None:
+        if re.match(r"^[a-zA-Z]+$", attrs["last_name"]) is None:
             raise ValidationError("last name is invalid")
 
         return super().validate(attrs)
