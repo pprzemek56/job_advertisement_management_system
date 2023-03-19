@@ -88,10 +88,12 @@ class Company(AbstractBaseUser):
     """
     email = models.EmailField(unique=True)
     company_name = models.CharField(max_length=200)
-    nip_number = models.CharField(max_length=13, unique=True)
+    nip_number = models.CharField(max_length=10, unique=True)
     date_joined = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
+
+    objects = CompanyManager()
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["company_name", "nip_number"]
