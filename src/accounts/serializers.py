@@ -70,7 +70,7 @@ class RegisterJobSeekerSerializer(serializers.ModelSerializer):
         """
         Verify phone_number is valid
         """
-        if re.match(r"^\d{10}$", attrs["phone_number"]) is None:
+        if re.match(r"^\d{9}$", attrs["phone_number"]) is None:
             raise ValidationError("phone number is invalid")
 
         """
