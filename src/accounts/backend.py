@@ -8,8 +8,6 @@ class AuthenticationBackend(BaseBackend):
     def authenticate(self, request, email=None, password=None, **kwargs):
         try:
             user = Company.objects.get(email=email)
-            print(email)
-            print(password)
         except ObjectDoesNotExist:
             try:
                 user = JobSeeker.objects.get(email=email)

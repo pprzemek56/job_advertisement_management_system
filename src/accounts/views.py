@@ -66,8 +66,7 @@ class LoginView(APIView):
         password = request.data.get("password")
 
         user = authenticate(email=email, password=password)
-        print(email)
-        print(user)
+
         if user is not None:
             tokens = create_jwt_pair(user)
             response = {
