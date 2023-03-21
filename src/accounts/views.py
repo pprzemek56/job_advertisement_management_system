@@ -65,7 +65,7 @@ class LoginView(APIView):
         email = request.data.get("email")
         password = request.data.get("password")
 
-        user = authenticate(email=email)
+        user = authenticate(email=email, password=password)
         print(email)
         print(user)
         if user is not None:
