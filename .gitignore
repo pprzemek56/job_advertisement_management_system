@@ -165,3 +165,8 @@ settings.py
 migrations/
 
 requirements.txt
+
+job_application_resumes/
+resumes/
+
+*.pyc
