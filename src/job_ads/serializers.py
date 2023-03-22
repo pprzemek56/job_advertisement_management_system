@@ -1,6 +1,6 @@
 from rest_framework.serializers import ModelSerializer
 
-from .models import Position
+from .models import Position, Industry
 
 
 class PositionSerializer(ModelSerializer):
@@ -12,3 +12,10 @@ class PositionSerializer(ModelSerializer):
         ]
 
 
+class IndustrySerializer(ModelSerializer):
+    class Meta:
+        model = Industry
+        fields = [
+            "id",
+            "name"
+        ]
