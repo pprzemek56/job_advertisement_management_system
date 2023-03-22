@@ -1,6 +1,6 @@
 from rest_framework.serializers import ModelSerializer
 
-from .models import Position, Industry
+from .models import Position, Industry, JobOffer
 
 
 class PositionSerializer(ModelSerializer):
@@ -18,4 +18,20 @@ class IndustrySerializer(ModelSerializer):
         fields = [
             "id",
             "name"
+        ]
+
+
+class JobOfferSerializer(ModelSerializer):
+    class Meta:
+        model = JobOffer
+        fields = [
+            "id",
+            "company",
+            "title",
+            "description",
+            "contract_type",
+            "working_type",
+            "position",
+            "industry",
+            "month_salary"
         ]
