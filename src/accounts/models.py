@@ -42,6 +42,7 @@ class JobSeeker(AbstractBaseUser):
     date_joined = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
+    is_company_user = models.BooleanField(default=False)
     cv = models.FileField(upload_to="\\resumes", null=True, blank=True)
 
     objects = JobSeekerManager()
@@ -92,6 +93,7 @@ class Company(AbstractBaseUser):
     date_joined = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
+    is_company_user = models.BooleanField(default=True)
 
     objects = CompanyManager()
 
