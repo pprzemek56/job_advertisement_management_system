@@ -1,6 +1,6 @@
 from rest_framework.serializers import ModelSerializer
 
-from .models import Position, Industry, JobOffer
+from .models import Position, Industry, JobOffer, JobApplication
 
 
 class PositionSerializer(ModelSerializer):
@@ -34,4 +34,15 @@ class JobOfferSerializer(ModelSerializer):
             "position",
             "industry",
             "month_salary"
+        ]
+
+
+class JobApplicationSerializer(ModelSerializer):
+    class Meta:
+        model = JobApplication
+        fields = [
+            "id",
+            "company",
+            "message",
+            "cv"
         ]
