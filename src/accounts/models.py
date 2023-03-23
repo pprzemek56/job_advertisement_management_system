@@ -105,3 +105,4 @@ class Company(AbstractBaseUser):
 
     def get_short_name(self):
         return f"{self.company_name}".title().strip()
+

@@ -1,10 +1,11 @@
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import generics
 from rest_framework import mixins
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 
 from .models import JobOffer, Position
+from .permissions import IsCompanyUser
 from .serializers import JobOfferSerializer
 
 
@@ -16,17 +17,20 @@ class JobOfferListCreateView(
     """
         view for creating new job offer by company
     """
-    # permission_classes = [AllowAny]
     serializer_class = JobOfferSerializer
     queryset = JobOffer.objects.all()
+
+    permission_classes = [AllowAny]
+
+    def get(self, request: Request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+    permission_classes = [IsCompanyUser]
 
     def perform_create(self, serializer):
         user = self.request.user
         serializer.save(company=user)
         return super().perform_create(serializer)
-
-    def get(self, request: Request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
         position_name = str(request.data.get("position")).strip().title()
