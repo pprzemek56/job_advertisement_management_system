@@ -1,18 +1,15 @@
 from django.contrib.auth.backends import BaseBackend
 from django.core.exceptions import ObjectDoesNotExist
 
-from .models import Company, JobSeeker
+from .models import User
 
 
 class AuthenticationBackend(BaseBackend):
     def authenticate(self, request, email=None, password=None, **kwargs):
         try:
-            user = Company.objects.get(email=email)
+            user = User.objects.get(email=email)
         except ObjectDoesNotExist:
-            try:
-                user = JobSeeker.objects.get(email=email)
-            except ObjectDoesNotExist:
-                return None
+            return None
 
         if user.check_password(password):
             return user

@@ -3,19 +3,16 @@ import re
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from .models import Company, JobSeeker
+from .models import Company, JobSeeker, User
 
 
 class CompanySerializer(serializers.ModelSerializer):
-    password = serializers.CharField(max_length=20, min_length=8, write_only=True)
 
     class Meta:
         model = Company
         fields = [
-            "email",
             "company_name",
             "nip_number",
-            "password"
         ]
 
     def validate(self, attrs):
@@ -24,7 +21,7 @@ class CompanySerializer(serializers.ModelSerializer):
         """
         if re.match(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", attrs["email"]) is None:
             raise ValidationError("email is invalid")
-        if JobSeeker.objects.filter(email=attrs["email"]).exists():
+        if User.objects.filter(email=attrs["email"]).exists():
             raise ValidationError("email is taken")
 
         """
@@ -45,17 +42,15 @@ class CompanySerializer(serializers.ModelSerializer):
 
 
 class JobSeekerSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(max_length=20, min_length=8, write_only=True)
 
     class Meta:
         model = JobSeeker
         fields = [
-            "email",
+            "user",
             "first_name",
             "last_name",
             "phone_number",
             "cv",
-            "password"
         ]
 
     def validate(self, attrs):
@@ -64,7 +59,7 @@ class JobSeekerSerializer(serializers.ModelSerializer):
         """
         if re.match(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", attrs["email"]) is None:
             raise ValidationError("email is invalid")
-        if Company.objects.filter(email=attrs["email"]).exists():
+        if User.objects.filter(email=attrs["email"]).exists():
             raise ValidationError("email is taken")
 
         """
