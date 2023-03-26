@@ -6,13 +6,15 @@ from rest_framework.exceptions import ValidationError
 from .models import Company, JobSeeker, User
 
 
-class CompanySerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(min_length=8, max_length=20, write_only=True)
 
     class Meta:
-        model = Company
+        model = User
         fields = [
-            "company_name",
-            "nip_number",
+            "email",
+            "password",
+            "is_company_user"
         ]
 
     def validate(self, attrs):
@@ -24,6 +26,30 @@ class CompanySerializer(serializers.ModelSerializer):
         if User.objects.filter(email=attrs["email"]).exists():
             raise ValidationError("email is taken")
 
+        return super().validate(attrs)
+
+    def create(self, validated_data):
+        password = validated_data.get("password")
+        user = super().create(validated_data)
+        user.set_password(password)
+
+        user.save()
+
+        return user
+
+
+class CompanySerializer(serializers.ModelSerializer):
+    user = User()
+
+    class Meta:
+        model = Company
+        fields = [
+            "user",
+            "company_name",
+            "nip_number",
+        ]
+
+    def validate(self, attrs):
         """
         Verify nip_number is valid
         """
@@ -33,15 +59,14 @@ class CompanySerializer(serializers.ModelSerializer):
         return super().validate(attrs)
 
     def create(self, validated_data):
-        password = validated_data.get("password")
         company = super().create(validated_data)
-        company.set_password(password)
         company.save()
 
         return company
 
 
 class JobSeekerSerializer(serializers.ModelSerializer):
+    user = User()
 
     class Meta:
         model = JobSeeker
@@ -54,14 +79,6 @@ class JobSeekerSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, attrs):
-        """
-        Verify email is valid and available
-        """
-        if re.match(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", attrs["email"]) is None:
-            raise ValidationError("email is invalid")
-        if User.objects.filter(email=attrs["email"]).exists():
-            raise ValidationError("email is taken")
-
         """
         Verify phone_number is valid
         """
@@ -83,10 +100,7 @@ class JobSeekerSerializer(serializers.ModelSerializer):
         return super().validate(attrs)
 
     def create(self, validated_data):
-        password = validated_data.get("password")
         job_seeker = super().create(validated_data)
-        job_seeker.set_password(password)
         job_seeker.save()
 
         return job_seeker
-

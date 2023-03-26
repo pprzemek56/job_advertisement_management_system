@@ -3,9 +3,11 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 
 
 class UserManager(BaseUserManager):
-    def create_user(self, email, password=None, **extra_fields):
+    def create_user(self, email, password, **extra_fields):
         if not email:
             raise ValueError("The Email field must be set")
+        if not password:
+            raise ValueError("The Password field must be set")
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
@@ -22,12 +24,15 @@ class User(AbstractBaseUser):
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 
+    def __str__(self):
+        return self.email
+
 
 class JobSeekerManager(BaseUserManager):
     use_in_migrations = True
 
-    def _create_user(self, email, first_name, last_name, phone_number, password, **extra_fields):
-        user = User.objects.create_user(email=email, password=password)
+    def _create_user(self, email, first_name, last_name, phone_number, **extra_fields):
+        user = User.objects.get(email=email)
         values = [first_name, last_name]
         field_value_map = dict(zip(self.model.REQUIRED_FIELDS, values))
         for field_name, value in field_value_map:
@@ -43,10 +48,10 @@ class JobSeekerManager(BaseUserManager):
         job_seeker.save(using=self._db)
         return job_seeker
 
-    def create_user(self, email, first_name, last_name, phone_number, password=None, **extra_fields):
+    def create_user(self, email, first_name, last_name, phone_number, **extra_fields):
         extra_fields.setdefault('is_staff', False)
         extra_fields.setdefault('is_superuser', False)
-        return self._create_user(email, first_name, last_name, phone_number, password, **extra_fields)
+        return self._create_user(email, first_name, last_name, phone_number, **extra_fields)
 
 
 class JobSeeker(AbstractBaseUser):
@@ -67,6 +72,9 @@ class JobSeeker(AbstractBaseUser):
     USERNAME_FIELD = "user"
     REQUIRED_FIELDS = ["first_name", "last_name"]
 
+    def __str__(self):
+        return self.first_name
+
     def get_full_name(self):
         return f"{self.first_name} {self.last_name}".title().strip()
 
@@ -77,8 +85,8 @@ class JobSeeker(AbstractBaseUser):
 class CompanyManager(BaseUserManager):
     use_in_migrations = True
 
-    def _create_user(self, email, company_name, nip_number, password, **extra_fields):
-        user = User.objects.create_user(email=email, password=password)
+    def _create_user(self, email, company_name, nip_number, **extra_fields):
+        user = User.objects.get(email=email)
         values = [company_name, nip_number]
         field_value_map = dict(zip(self.model.REQUIRED_FIELDS, values))
         for field_name, value in field_value_map:
@@ -93,10 +101,10 @@ class CompanyManager(BaseUserManager):
         company.save(using=self._db)
         return company
 
-    def create_user(self, email, company_name, nip_number, password=None, **extra_fields):
+    def create_user(self, email, company_name, nip_number, **extra_fields):
         extra_fields.setdefault("is_staff", False)
         extra_fields.setdefault("is_superuser", False)
-        return self._create_user(email, company_name, nip_number, password, **extra_fields)
+        return self._create_user(email, company_name, nip_number, **extra_fields)
 
 
 class Company(AbstractBaseUser):
@@ -114,6 +122,9 @@ class Company(AbstractBaseUser):
 
     USERNAME_FIELD = "user"
     REQUIRED_FIELDS = ["company_name", "nip_number"]
+
+    def __str__(self):
+        return self.company_name
 
     def get_full_name(self):
         return f"{self.company_name} {self.nip_number}".title().strip()
