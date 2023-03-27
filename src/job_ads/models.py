@@ -30,7 +30,7 @@ WORKING_TYPES = (
 
 
 class JobOffer(models.Model):
-    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, null=True, blank=True)
     title = models.CharField(max_length=50)
     description = models.TextField()
     contract_type = models.CharField(max_length=50, choices=CONTRACT_TYPES)

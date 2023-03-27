@@ -1,11 +1,12 @@
 from django.core.exceptions import ObjectDoesNotExist
-from rest_framework import generics
+from rest_framework import generics, status
 from rest_framework import mixins
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
+from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
-from .models import JobOffer, Position
+from .models import JobOffer, Position, Industry
 from .permissions import IsCompanyUser
 from .serializers import JobOfferSerializer
 
@@ -21,7 +22,6 @@ class JobOfferListCreateView(
     """
         view for creating new job offer by company
     """
-    authentication_classes = [AuthenticationBackend]
     serializer_class = JobOfferSerializer
     queryset = JobOffer.objects.all()
 
@@ -38,12 +38,11 @@ class JobOfferListCreateView(
 
     def perform_create(self, serializer):
         user = self.request.user
-        print(user)
         company = Company.objects.get(user_id=user.id)
         serializer.save(company=company)
         return super().perform_create(serializer)
 
-    def create(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         position_name = str(request.data.get("position")).strip().title()
         industry_name = str(request.data.get("industry")).strip().title()
 
@@ -53,17 +52,28 @@ class JobOfferListCreateView(
             position = Position.objects.create(name=position_name)
             position.save()
 
-        request.data["position"] = position
+        request.data["position"] = position.pk
 
         try:
-            industry = Position.objects.get(name=industry_name)
+            industry = Industry.objects.get(name=industry_name)
         except ObjectDoesNotExist:
-            industry = Position.objects.create(name=industry_name)
+            industry = Industry.objects.create(name=industry_name)
             industry.save()
 
-        request.data["industry"] = industry
+        request.data["industry"] = industry.pk
 
-        return super().create(request, *args, **kwargs)
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            self.perform_create(serializer)
+            serializer.save()
+            response = {
+                "message": "Job offer created successfully",
+                "data": serializer.data
+            }
+
+            return Response(data=response, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 job_offer_list_create_view = JobOfferListCreateView().as_view()
