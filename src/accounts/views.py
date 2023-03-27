@@ -20,11 +20,10 @@ def create_company(request: Request):
     :return company:
     """
     data = request.data
-    serializer = CompanyWithUserSerializer(data=data)
+    serializer = CompanySerializer(data=data)
 
     if serializer.is_valid():
         serializer.save()
-        # TODO: change returning data because it is the problem
         response = {
             "message": "Company account created successfully",
             "data": serializer.data
