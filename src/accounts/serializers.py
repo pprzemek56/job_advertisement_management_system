@@ -6,6 +6,52 @@ from rest_framework.exceptions import ValidationError
 from .models import Company, JobSeeker, User
 
 
+class CompanyWithUserSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(min_length=8, max_length=20, write_only=True)
+    is_company_user = serializers.BooleanField(default=True)
+    company_name = serializers.CharField(max_length=255)
+    nip_number = serializers.CharField(max_length=10)
+
+    def validate_email(self, value):
+        if re.match(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", value) is None:
+            raise ValidationError("email is invalid")
+        if User.objects.filter(email=value).exists():
+            raise ValidationError("email is taken")
+
+        return value
+
+    def validate_nip_number(self, value):
+        if re.match(r"^\d{10}$", value) is None:
+            raise serializers.ValidationError("nip number is invalid")
+        if Company.objects.filter(nip_number=value).exists():
+            raise serializers.ValidationError("nip number is taken")
+        return value
+
+    def create(self, validated_data):
+        user_data = {
+            "email": validated_data.pop("email"),
+            "password": validated_data.pop("password"),
+            "is_company_user": validated_data.pop("is_company_user")
+        }
+
+        user_serializer = UserSerializer(data=user_data)
+        user_serializer.is_valid(raise_exception=True)
+        user = user_serializer.save()
+
+        company_data = {
+            "user": user.id,
+            "company_name": validated_data.pop("company_name"),
+            "nip_number": validated_data.pop("nip_number")
+        }
+
+        company_serializer = CompanySerializer(data=company_data)
+        company_serializer.is_valid(raise_exception=True)
+        company = company_serializer.save()
+
+        return company
+
+
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(min_length=8, max_length=20, write_only=True)
 

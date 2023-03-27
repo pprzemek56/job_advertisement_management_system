@@ -1,4 +1,5 @@
 from django.contrib.auth import authenticate
+from django.db import transaction
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
@@ -6,7 +7,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .serializers import CompanySerializer, JobSeekerSerializer, UserSerializer
+from .serializers import CompanySerializer, JobSeekerSerializer, UserSerializer, CompanyWithUserSerializer
 from .tokens import create_jwt_pair
 
 
@@ -19,37 +20,23 @@ def create_company(request: Request):
     :return company:
     """
     data = request.data
-    user_data = {
-        "email": data.get("email"),
-        "password": data.get("password"),
-        "is_company_user": data.get("is_company_user")
-    }
-    user_serializer = UserSerializer(data=user_data)
-    if user_serializer.is_valid():
-        user = user_serializer.save()
-    else:
-        return Response(data=user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    serializer = CompanyWithUserSerializer(data=data)
 
-    company_data = {
-        "user": user.id,
-        "company_name": data.get("company_name"),
-        "nip_number": data.get("nip_number")
-    }
-    company_serializer = CompanySerializer(data=company_data)
-
-    if company_serializer.is_valid():
-        company_serializer.save()
+    if serializer.is_valid():
+        serializer.save()
+        # TODO: change returning data because it is the problem
         response = {
             "message": "Company account created successfully",
-            "data": company_serializer.data
+            "data": serializer.data
         }
         return Response(data=response, status=status.HTTP_201_CREATED)
 
-    return Response(data=company_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
+@transaction.atomic
 def create_job_seeker(request: Request):
     """
     Register new job seeker account
