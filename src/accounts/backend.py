@@ -1,5 +1,6 @@
 from django.contrib.auth.backends import BaseBackend
 from django.core.exceptions import ObjectDoesNotExist
+from django.utils.translation import gettext_lazy as _
 
 from .models import User
 
@@ -15,3 +16,6 @@ class AuthenticationBackend(BaseBackend):
             return user
 
         return None
+
+    def authenticate_header(self, request):
+        return 'Bearer realm="%s"' % _('api')

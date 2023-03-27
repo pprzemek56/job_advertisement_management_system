@@ -3,10 +3,14 @@ from rest_framework import generics
 from rest_framework import mixins
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from .models import JobOffer, Position
 from .permissions import IsCompanyUser
 from .serializers import JobOfferSerializer
+
+from accounts.models import Company
+from accounts.backend import AuthenticationBackend
 
 
 class JobOfferListCreateView(
@@ -17,19 +21,26 @@ class JobOfferListCreateView(
     """
         view for creating new job offer by company
     """
+    authentication_classes = [AuthenticationBackend]
     serializer_class = JobOfferSerializer
     queryset = JobOffer.objects.all()
 
-    permission_classes = [AllowAny]
+    def get_permissions(self):
+        if self.request.method == "GET":
+            permission_classes = [AllowAny]
+        else:
+            permission_classes = [IsAuthenticated, IsCompanyUser]
+
+        return [permission() for permission in permission_classes]
 
     def get(self, request: Request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
 
-    permission_classes = [IsCompanyUser]
-
     def perform_create(self, serializer):
         user = self.request.user
-        serializer.save(company=user)
+        print(user)
+        company = Company.objects.get(user_id=user.id)
+        serializer.save(company=company)
         return super().perform_create(serializer)
 
     def create(self, request, *args, **kwargs):
