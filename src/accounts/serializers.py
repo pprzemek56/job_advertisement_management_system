@@ -23,8 +23,6 @@ class UserSerializer(serializers.ModelSerializer):
         """
         if re.match(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", attrs["email"]) is None:
             raise ValidationError("email is invalid")
-        if User.objects.filter(email=attrs["email"]).exists():
-            raise ValidationError("email is taken")
 
         return super().validate(attrs)
 
@@ -63,6 +61,7 @@ class CompanySerializer(serializers.ModelSerializer):
         user_serializer = UserSerializer(data=user_data)
         user_serializer.is_valid(raise_exception=True)
         user = user_serializer.save()
+
         company = Company.objects.create(
             user=user,
             company_name=validated_data.pop("company_name"),
@@ -73,7 +72,7 @@ class CompanySerializer(serializers.ModelSerializer):
 
 
 class JobSeekerSerializer(serializers.ModelSerializer):
-    user = User()
+    user = UserSerializer()
 
     class Meta:
         model = JobSeeker
@@ -107,7 +106,17 @@ class JobSeekerSerializer(serializers.ModelSerializer):
         return super().validate(attrs)
 
     def create(self, validated_data):
-        job_seeker = super().create(validated_data)
-        job_seeker.save()
+        user_data = validated_data.pop("user")
+        user_serializer = UserSerializer(data=user_data)
+        user_serializer.is_valid(raise_exception=True)
+        user = user_serializer.save()
+
+        job_seeker = JobSeeker.objects.create(
+            user=user,
+            first_name=validated_data.pop("first_name"),
+            last_name=validated_data.pop("last_name"),
+            phone_number=validated_data.pop("phone_number"),
+            cv=validated_data.pop("cv")
+        )
 
         return job_seeker

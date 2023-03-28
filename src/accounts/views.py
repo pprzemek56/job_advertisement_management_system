@@ -7,7 +7,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .serializers import CompanySerializer, JobSeekerSerializer, UserSerializer, CompanyWithUserSerializer
+from .serializers import CompanySerializer, JobSeekerSerializer, UserSerializer
 from .tokens import create_jwt_pair
 
 
@@ -43,35 +43,17 @@ def create_job_seeker(request: Request):
     :return job_seeker:
     """
     data = request.data
-    user_data = {
-        "email": data.get("email"),
-        "password": data.get("password"),
-        "is_company_user": data.get("is_company_user")
-    }
-    user_serializer = UserSerializer(data=user_data)
-    if user_serializer.is_valid():
-        user = user_serializer.save()
-    else:
-        return Response(data=user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    serializer = JobSeekerSerializer(data=data)
 
-    job_seeker_data = {
-        "user": user.id,
-        "first_name": data.get("first_name"),
-        "last_name": data.get("last_name"),
-        "phone_number": data.get("phone_number"),
-        "cv": data.get("cv"),
-    }
-    job_seeker_serializer = JobSeekerSerializer(data=job_seeker_data)
-
-    if job_seeker_serializer.is_valid():
-        job_seeker_serializer.save()
+    if serializer.is_valid():
+        serializer.save()
         response = {
             "message": "Job seeker account created successfully",
-            "data": job_seeker_serializer.data
+            "data": serializer.data
         }
         return Response(data=response, status=status.HTTP_201_CREATED)
 
-    return Response(data=job_seeker_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 
