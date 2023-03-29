@@ -38,11 +38,13 @@ class JobOfferSerializer(ModelSerializer):
 
 
 class JobApplicationSerializer(ModelSerializer):
+    job_offer = JobOffer()
+
     class Meta:
         model = JobApplication
         fields = [
             "id",
-            "company",
+            "job_offer",
             "message",
             "cv"
         ]

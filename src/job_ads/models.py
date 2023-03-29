@@ -42,6 +42,6 @@ class JobOffer(models.Model):
 
 class JobApplication(models.Model):
     job_seeker = models.ForeignKey(JobSeeker, on_delete=models.CASCADE, null=True, blank=True)
-    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    job_offer = models.ForeignKey(JobOffer, on_delete=models.CASCADE)
     message = models.TextField(null=True, blank=True)
-    cv = models.FileField(upload_to="\\job_application_resumes")
+    cv = models.FileField(upload_to="job_application_resumes")

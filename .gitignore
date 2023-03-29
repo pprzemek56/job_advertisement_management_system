@@ -166,7 +166,7 @@ migrations/
 
 requirements.txt
 
-job_application_resumes/
+src/job_application_resumes/
 resumes/
 
 *.pyc
